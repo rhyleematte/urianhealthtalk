@@ -174,6 +174,12 @@ export default function JournalScreen() {
     }
   };
 
+  const handleSaveEntry = async () => {
+    if (!newTitle.trim() || !newText.trim()) {
+      Alert.alert("Missing Info", "Please provide a title and some thoughts.");
+      return;
+    }
+
     const newEntryObj = {
       user_id: user?.id,
       title: newTitle,
