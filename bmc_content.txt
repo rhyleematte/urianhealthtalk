@@ -1,0 +1,43 @@
+Urian Solace AI 
+
+MEMBERS:
+
+             Alegrado, Karl Vincent
+
+              Baslot, Edwin
+
+              Cirilo, Charlotte 
+
+Cuabo, Sheryn
+
+Macabanding, Rajiv Ybraheem Litera
+
+BUSINESS MODEL CANVAS
+
+Customer Segments
+ Urian Solace AI targets individuals who are seeking emotional support, mental wellness guidance, and a safe digital space to express their thoughts anytime. Its primary users include students, young professionals, employees experiencing workplace stress, and people who may feel overwhelmed, anxious, or emotionally drained. It also serves individuals who are hesitant to seek face-to-face therapy and prefer private, accessible, and judgment-free support through mobile technology.
+
+Value Propositions
+ Urian Solace AI offers users a safe, private, and secure AI-powered companion that provides emotional support anytime and anywhere. The platform creates a judgment-free environment where users can talk openly, receive calming tips, journaling prompts, mood tracking assistance, and personalized wellness guidance. A unique feature of the platform is its ability to recommend professional specialists or psychologists when deeper mental health support is needed. This combination of instant AI support and real human referral services makes the app highly valuable for users seeking both convenience and care.
+
+Channels
+ The application reaches customers primarily through mobile platforms such as Android and iOS apps. It can also be promoted through social media platforms like Facebook, Instagram, TikTok, and YouTube, where mental wellness awareness is growing rapidly. Additional channels include partnerships with schools, universities, companies, wellness communities, and digital advertising campaigns. Word-of-mouth referrals and app store visibility will also play an important role in customer acquisition.
+
+Customer Relationships
+ Urian Solace AI builds relationships with users through personalized, continuous, and supportive interactions. The AI chatbot listens actively, responds empathetically, and provides relevant guidance based on user conversations. Features such as journaling streaks, mood summaries, daily calm tips, and progress tracking help create long-term engagement and trust. Customer support services, feedback systems, and regular feature updates further strengthen the relationship between the brand and its users.
+
+Revenue Streams
+ The business can generate revenue through freemium subscriptions, where basic chatbot support is free with limited token, while premium has unlimited token and features such as advanced mood analytics, personalized therapy plans, unlimited journaling storage, and priority support require payment. Additional income may come from referral commissions through licensed psychologists or mental health specialists booked through the platform. Corporate wellness packages for companies and premium partnerships with schools or organizations can also provide recurring revenue.
+
+Key Resources
+ The key resources of Urian Solace AI include its AI chatbot technology, mobile application platform, user database, secure cloud storage system, and mental wellness content library. Human resources such as developers, UI/UX designers, psychologists, content creators, and customer support teams are also essential. Strong branding, trust, and user privacy systems are critical intangible resources that help the business remain competitive and reliable.
+
+Key Activities
+ The company’s main activities involve developing and improving the AI chatbot, maintaining the mobile application, updating wellness content, analyzing user feedback, and ensuring data security. Other key activities include managing partnerships with mental health professionals, marketing campaigns, customer support, and continuous innovation of new wellness tools such as mood tracking, journaling prompts, and emotional progress reports.
+
+Key Partnerships
+ Urian Solace AI depends on partnerships with licensed psychologists, counselors, and mental health clinics to provide professional referrals and consultations. Technology providers such as cloud hosting services, AI infrastructure companies, and payment gateway providers are also important partners. Collaborations with schools, universities, businesses, and advocacy organizations can help expand the app’s reach and credibility.
+
+Cost Structure
+ The major costs of the business include software development, AI model maintenance, cloud hosting, cybersecurity systems, mobile app updates, and employee salaries. Marketing and advertising expenses are also necessary to attract and retain users. Additional costs may include professional partnership fees, content creation, customer service operations, legal compliance, and privacy protection systems to ensure safe and ethical service delivery.
+

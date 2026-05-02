@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Verified - Serene</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Manrope', sans-serif;
+            background-color: #f8f9fa;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .icon {
+            background-color: #e6fffa;
+            color: #319795;
+            width: 80px;
+            height: 80px;
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px auto;
+        }
+
+        .icon svg {
+            width: 40px;
+            height: 40px;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 800;
+            margin: 0 0 12px 0;
+            color: #2d3748;
+        }
+
+        p {
+            font-size: 16px;
+            color: #718096;
+            line-height: 1.5;
+            margin: 0 0 32px 0;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: #319795;
+            color: white;
+            text-decoration: none;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: opacity 0.2s;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .loading {
+            display: none;
+        }
+        
+        #status-container.is-loading .success-content {
+            display: none;
+        }
+        
+        #status-container.is-loading .loading {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="status-container">
+        
+        <div class="success-content" id="success-view" style="display: none;">
+            <div class="icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <h1 id="title">Verification Successful!</h1>
+            <p id="message">Your email has been successfully verified. You can now close this window and return to the app.</p>
+            <!-- In the future, you can put your custom app scheme here like serene:// -->
+            <a href="#" onclick="window.close()" class="btn">Close Window</a>
+        </div>
+
+        <div class="success-content" id="error-view" style="display: none;">
+            <div class="icon" style="background-color: #FFF5F5; color: #E53E3E;">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </div>
+            <h1>Something went wrong</h1>
+            <p>We couldn't verify your request. The link might be expired or invalid.</p>
+        </div>
+
+    </div>
+
+    <script>
+        // Check if there is a hash or query param from Supabase
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const queryParams = new URLSearchParams(window.location.search);
+        
+        const accessToken = hashParams.get('access_token');
+        const error = hashParams.get('error') || queryParams.get('error');
+
+        if (accessToken || hashParams.get('type') === 'signup' || hashParams.get('type') === 'recovery') {
+            // Success!
+            document.getElementById('success-view').style.display = 'block';
+            
+            if (hashParams.get('type') === 'recovery') {
+                document.getElementById('title').innerText = "Password Reset";
+                document.getElementById('message').innerText = "You can now return to the app to reset your password.";
+            }
+            
+        } else if (error) {
+            // Error!
+            document.getElementById('error-view').style.display = 'block';
+        } else {
+            // Just a normal visit without tokens
+            document.getElementById('success-view').style.display = 'block';
+            document.getElementById('title').innerText = "Serene AI";
+            document.getElementById('message').innerText = "A supportive mental health companion.";
+        }
+    </script>
+</body>
+</html>
