@@ -453,8 +453,16 @@ export default function ProfileScreen() {
               icon={Users} 
               title="Gender" 
               value={profile?.gender || "Not set"} 
-              isLast 
+              isLast={profile?.plan_type !== 'premium'}
             />
+            {profile?.plan_type === 'premium' && profile?.plan_expires_at && (
+              <SettingRow 
+                icon={Clock} 
+                title="Premium Expires" 
+                value={new Date(profile.plan_expires_at).toLocaleDateString()} 
+                isLast
+              />
+            )}
           </View>
         </View>
 

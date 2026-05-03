@@ -1,15 +1,23 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Modal, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Typography } from '../../constants/Theme';
-import { CheckCircle, Leaf, Shield, XCircle, Heart, FileText } from 'lucide-react-native';
-import * as DocumentPicker from 'expo-document-picker';
-
+import { CheckCircle, Leaf, Shield, XCircle, Heart, Clock, AlertCircle, Check, X } from 'lucide-react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../config/supabase';
 
+type SubscriptionRequest = {
+  id: string;
+  type: 'upgrade' | 'cancel';
+  status: 'pending' | 'approved' | 'declined';
+  created_at: string;
+};
+
 export default function PlansScreen() {
   const { user, profile, refreshProfile } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [request, setRequest] = useState<SubscriptionRequest | null>(null);
   
   const freeFeatures = [
     'Limited daily AI tokens',
@@ -22,52 +30,71 @@ export default function PlansScreen() {
     'Advanced Emotional Analytics',
     'Personalized Therapy Plans',
     'Priority Specialist Access',
-    'Document Analysis (.txt, .docx)',
   ];
 
-  const handleDocumentCheck = async () => {
-    try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: ['text/plain', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-        copyToCacheDirectory: true,
-      });
-
-      if (!result.canceled) {
-        Alert.alert(
-          'Document Analyzed',
-          `Successfully processed: ${result.assets[0].name}\n\nThis is a premium feature to extract therapy notes, journaling records, or business model canvases.`
-        );
-      }
-    } catch (err) {
-      Alert.alert('Error', 'Failed to pick document.');
+  useEffect(() => {
+    if (user) {
+      fetchActiveRequest();
     }
+  }, [user, profile]); // Refresh when profile changes (approved via email)
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([
+        refreshProfile(),
+        fetchActiveRequest()
+      ]);
+    } catch (error) {
+      console.error('Refresh failed:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [user]);
+
+  const fetchActiveRequest = async () => {
+    const { data, error } = await supabase
+      .from('subscription_requests')
+      .select('*')
+      .eq('user_id', user?.id)
+      .eq('status', 'pending')
+      .single();
+
+    if (data) setRequest(data);
+    else setRequest(null);
   };
 
-  const handleUpgrade = async () => {
+  const handleCreateRequest = async (type: 'upgrade' | 'cancel') => {
     if (!user) {
-      Alert.alert('Error', 'You must be logged in to upgrade.');
+      Alert.alert('Error', 'You must be logged in to manage your plan.');
       return;
     }
-    
-    // Simulate payment process and update database
-    const { error } = await supabase
-      .from('profiles')
-      .update({ plan_type: 'premium', tokens: 999999 })
-      .eq('id', user.id);
-      
-    if (error) {
-      Alert.alert('Upgrade Failed', error.message);
-    } else {
-      Alert.alert('Success!', 'You are now a Premium member.');
-      await refreshProfile();
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('subscription_requests')
+        .insert([{ user_id: user.id, type, status: 'pending' }]);
+
+      if (error) throw error;
+
+      Alert.alert(
+        'Request Sent',
+        `A verification email has been sent to ${user.email}. Please click the "Confirm" button in your email to ${type === 'upgrade' ? 'activate Premium' : 'confirm cancellation'}.`
+      );
+      fetchActiveRequest();
+    } catch (err: any) {
+      Alert.alert('Error', err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   const isPremium = profile?.plan_type === 'premium';
+  const hasPendingRequest = !!request;
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <Leaf size={24} color={Colors.primary} />
@@ -79,12 +106,42 @@ export default function PlansScreen() {
         />
       </View>
 
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
+      <ScrollView 
+        style={styles.scrollView} 
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={onRefresh}
+            colors={[Colors.primary]}
+            tintColor={Colors.primary}
+          />
+        }
+      >
+        {hasPendingRequest && (
+          <View style={styles.pendingCard}>
+            <Clock size={20} color={Colors.primary} />
+            <View style={styles.pendingTextContainer}>
+              <Text style={styles.pendingTitle}>Pending {request.type === 'upgrade' ? 'Upgrade' : 'Cancellation'}</Text>
+              <Text style={styles.pendingSubtitle}>Please verify this action via the email we sent you.</Text>
+            </View>
+          </View>
+        )}
+
+        {isPremium && profile?.plan_expires_at && (
+          <View style={styles.expirationCard}>
+            <AlertCircle size={20} color="#ffffff" />
+            <Text style={styles.expirationText}>
+              Premium access expires on: {new Date(profile.plan_expires_at).toLocaleDateString()}
+            </Text>
+          </View>
+        )}
+
         <Text style={styles.introText}>
           Choose the plan that best supports your mental well-being and personal growth.
         </Text>
 
-        {/* Free Plan */}
+        {/* Basic Plan */}
         <View style={styles.planCard}>
           <View style={styles.planHeader}>
             <View style={styles.badge}><Text style={styles.badgeText}>BASIC</Text></View>
@@ -94,9 +151,6 @@ export default function PlansScreen() {
               <Text style={styles.price}>0</Text>
               <Text style={styles.period}>/forever</Text>
             </View>
-            <Text style={styles.planDescription}>
-              Essential support for your daily mindfulness practice.
-            </Text>
           </View>
           <View style={styles.featuresList}>
             {freeFeatures.map((feature, i) => (
@@ -106,9 +160,16 @@ export default function PlansScreen() {
               </View>
             ))}
           </View>
-          <TouchableOpacity style={styles.currentPlanButton} disabled>
-            <Text style={styles.currentPlanButtonText}>{isPremium ? 'Downgrade' : 'Current Plan'}</Text>
-          </TouchableOpacity>
+          
+          {isPremium ? (
+            <View style={styles.currentPlanButton}>
+              <Text style={styles.currentPlanButtonText}>Downgraded to Basic</Text>
+            </View>
+          ) : (
+            <View style={styles.currentPlanButton}>
+              <Text style={styles.currentPlanButtonText}>Current Plan</Text>
+            </View>
+          )}
         </View>
 
         {/* Premium Plan */}
@@ -123,9 +184,6 @@ export default function PlansScreen() {
               <Text style={[styles.price, { color: '#ffffff' }]}>12</Text>
               <Text style={[styles.period, { color: '#ffffff' }]}>/month</Text>
             </View>
-            <Text style={[styles.planDescription, { color: '#e0e0e0' }]}>
-              Unlock the full power of Serene Dialogue for deeper insights.
-            </Text>
           </View>
           <View style={styles.featuresList}>
             {premiumFeatures.map((feature, i) => (
@@ -136,24 +194,23 @@ export default function PlansScreen() {
             ))}
           </View>
           
-          {isPremium && (
-            <TouchableOpacity style={styles.docTestButton} onPress={handleDocumentCheck}>
-              <FileText size={20} color="#ffffff" />
-              <Text style={styles.docTestButtonText}>Test Document Analysis (.txt, .docx)</Text>
-            </TouchableOpacity>
-          )}
-          
           <TouchableOpacity 
-            style={[styles.upgradeButton, isPremium && { opacity: 0.5 }]} 
-            onPress={handleUpgrade}
-            disabled={isPremium}
+            style={[
+              isPremium ? styles.cancelButton : styles.upgradeButton, 
+              hasPendingRequest && { opacity: 0.5 }
+            ]} 
+            onPress={() => isPremium ? handleCreateRequest('cancel') : handleCreateRequest('upgrade')}
+            disabled={hasPendingRequest}
           >
-            <Text style={styles.upgradeButtonText}>{isPremium ? 'Current Plan' : 'Upgrade Now'}</Text>
+            {loading ? <ActivityIndicator color={isPremium ? '#ffffff' : Colors.primary} /> : (
+              <Text style={isPremium ? styles.cancelButtonText : styles.upgradeButtonText}>
+                {isPremium ? 'Cancel Plan' : 'Upgrade Now'}
+              </Text>
+            )}
           </TouchableOpacity>
           <CheckCircle size={100} color="rgba(255,255,255,0.1)" style={styles.bgIcon} />
         </View>
 
-        {/* Trust Badges */}
         <View style={styles.trustGrid}>
           <View style={styles.trustItem}>
             <Shield size={24} color={Colors.primary} />
@@ -169,19 +226,9 @@ export default function PlansScreen() {
           </View>
         </View>
 
-        {/* Footer Image */}
-        <View style={styles.footerContainer}>
-          <Image 
-            source={require('@/assets/images/landscape.png')} 
-            style={styles.footerImage}
-          />
-          <View style={styles.overlay}>
-            <Text style={styles.quoteText}>
-              "Investing in your peace of mind is the greatest gift."
-            </Text>
-          </View>
-        </View>
+        <View style={{ height: 40 }} />
       </ScrollView>
+
     </SafeAreaView>
   );
 }
@@ -220,14 +267,48 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
-    gap: 24,
+    gap: 20,
+  },
+  pendingCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.primaryContainer,
+    padding: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: Colors.primary + '30',
+  },
+  pendingTextContainer: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  pendingTitle: {
+    ...Typography.subtitle,
+    fontSize: 14,
+    color: Colors.primary,
+  },
+  pendingSubtitle: {
+    ...Typography.caption,
+    color: Colors.textMuted,
+  },
+  expirationCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#34a853',
+    padding: 16,
+    borderRadius: 20,
+    gap: 12,
+  },
+  expirationText: {
+    ...Typography.caption,
+    color: '#ffffff',
+    fontWeight: '700',
   },
   introText: {
     ...Typography.body,
     textAlign: 'center',
     color: Colors.textMuted,
     paddingHorizontal: 20,
-    marginBottom: 8,
   },
   planCard: {
     backgroundColor: '#ffffff',
@@ -245,7 +326,7 @@ const styles = StyleSheet.create({
   },
   planHeader: {
     alignItems: 'flex-start',
-    marginBottom: 24,
+    marginBottom: 20,
   },
   badge: {
     backgroundColor: '#e9ecef',
@@ -269,7 +350,7 @@ const styles = StyleSheet.create({
   priceRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    marginBottom: 16,
+    marginBottom: 8,
   },
   currency: {
     ...Typography.h2,
@@ -279,7 +360,6 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 40,
     fontWeight: '800',
-    fontFamily: 'Manrope-Bold',
   },
   period: {
     ...Typography.body,
@@ -287,13 +367,9 @@ const styles = StyleSheet.create({
     marginLeft: 4,
     color: Colors.textMuted,
   },
-  planDescription: {
-    ...Typography.body,
-    color: Colors.textMuted,
-  },
   featuresList: {
-    gap: 16,
-    marginBottom: 32,
+    gap: 12,
+    marginBottom: 24,
   },
   featureItem: {
     flexDirection: 'row',
@@ -305,7 +381,7 @@ const styles = StyleSheet.create({
     color: Colors.text,
   },
   currentPlanButton: {
-    backgroundColor: '#e9ecef',
+    backgroundColor: '#f1f3f5',
     paddingVertical: 16,
     borderRadius: 20,
     alignItems: 'center',
@@ -314,20 +390,16 @@ const styles = StyleSheet.create({
     ...Typography.subtitle,
     color: Colors.textMuted,
   },
-  docTestButton: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingVertical: 14,
+  downgradeButton: {
+    borderWidth: 1,
+    borderColor: Colors.primary,
+    paddingVertical: 16,
     borderRadius: 20,
     alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 12,
-    zIndex: 1,
   },
-  docTestButtonText: {
+  downgradeButtonText: {
     ...Typography.subtitle,
-    color: '#ffffff',
+    color: Colors.primary,
   },
   upgradeButton: {
     backgroundColor: '#ffffff',
@@ -340,6 +412,19 @@ const styles = StyleSheet.create({
     ...Typography.subtitle,
     color: Colors.primary,
   },
+  cancelButton: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    paddingVertical: 16,
+    borderRadius: 20,
+    alignItems: 'center',
+    zIndex: 1,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+  },
+  cancelButtonText: {
+    ...Typography.subtitle,
+    color: '#ffffff',
+  },
   bgIcon: {
     position: 'absolute',
     top: 20,
@@ -351,7 +436,7 @@ const styles = StyleSheet.create({
   trustItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#eef6f9',
+    backgroundColor: '#f0f7ff',
     padding: 16,
     borderRadius: 16,
     gap: 16,
@@ -361,29 +446,55 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.primary,
   },
-  footerContainer: {
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  simModal: {
+    backgroundColor: '#ffffff',
+    borderRadius: 24,
     width: '100%',
-    height: 200,
-    borderRadius: 30,
-    overflow: 'hidden',
-    position: 'relative',
-    marginTop: 8,
+    padding: 24,
+  },
+  simHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 20,
   },
-  footerImage: {
-    width: '100%',
-    height: '100%',
+  simTitle: {
+    ...Typography.h3,
   },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.2)',
+  simContent: {
+    gap: 20,
+  },
+  simText: {
+    ...Typography.body,
+    lineHeight: 22,
+  },
+  simActions: {
+    gap: 12,
+  },
+  simButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'center',
-    padding: 30,
+    paddingVertical: 14,
+    borderRadius: 16,
+    gap: 10,
   },
-  quoteText: {
+  approveBtn: {
+    backgroundColor: '#34a853',
+  },
+  declineBtn: {
+    backgroundColor: '#ea4335',
+  },
+  simButtonText: {
     ...Typography.subtitle,
     color: '#ffffff',
-    textAlign: 'left',
-    lineHeight: 24,
   },
 });
+

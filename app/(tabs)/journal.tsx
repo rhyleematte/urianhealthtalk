@@ -67,10 +67,13 @@ export default function JournalScreen() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [user]);
 
   const loadData = async () => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     
     try {
       const { data, error } = await supabase
@@ -175,6 +178,11 @@ export default function JournalScreen() {
   };
 
   const handleSaveEntry = async () => {
+    if (!user) {
+      Alert.alert("Error", "You must be logged in to save entries.");
+      return;
+    }
+
     if (!newTitle.trim() || !newText.trim()) {
       Alert.alert("Missing Info", "Please provide a title and some thoughts.");
       return;

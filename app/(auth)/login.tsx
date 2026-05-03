@@ -29,6 +29,7 @@ export default function LoginScreen() {
       Alert.alert('Login Failed', error.message);
       setLoading(false);
     } else {
+      setLoading(false);
       // router.replace will be handled by AuthContext listener in _layout if we set it up,
       // but we can also manually navigate if needed.
       router.replace('/(tabs)/chat');

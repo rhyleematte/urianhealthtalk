@@ -12,6 +12,7 @@ export interface Profile {
   full_name?: string;
   birthday?: string;
   gender?: string;
+  plan_expires_at?: string;
 }
 
 type AuthContextType = {
@@ -48,11 +49,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (error) {
         console.error('Error fetching profile:', error.message);
+        return null;
       } else if (data) {
         setProfile(data as Profile);
+        return data as Profile;
       }
+      return null;
     } catch (err) {
       console.error('Exception fetching profile', err);
+      return null;
     }
   };
 
@@ -65,32 +70,64 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     let mounted = true;
 
-    async function getInitialSession() {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) console.log('Get session error:', error.message);
-      
-      if (mounted) {
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          await fetchProfile(session.user.id);
+    async function initializeAuth() {
+      try {
+        // 1. Get initial session
+        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
+        if (error) console.error('Get session error:', error.message);
+        
+        if (mounted) {
+          setSession(initialSession);
+          setUser(initialSession?.user ?? null);
+          if (initialSession?.user) {
+            const fetchedProfile = await fetchProfile(initialSession.user.id);
+            
+            // Check for expiration
+            if (fetchedProfile && fetchedProfile.plan_type === 'premium' && fetchedProfile.plan_expires_at) {
+              const expires = new Date(fetchedProfile.plan_expires_at);
+              if (expires < new Date()) {
+                console.log('Premium plan expired. Reverting to basic.');
+                await supabase
+                  .from('profiles')
+                  .update({ plan_type: 'basic', plan_expires_at: null })
+                  .eq('id', fetchedProfile.id);
+                await fetchProfile(fetchedProfile.id);
+              }
+            }
+          }
         }
-        setLoading(false);
+      } catch (err) {
+        console.error('Auth initialization error:', err);
+      } finally {
+        if (mounted) setLoading(false);
       }
     }
 
-    getInitialSession();
+    initializeAuth();
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          await fetchProfile(session.user.id);
-        } else {
-          setProfile(null);
+      async (event, currentSession) => {
+        if (!mounted) return;
+        
+        // If we have a new session, we might want to show loading while we fetch profile
+        if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+          setLoading(true);
         }
-        setLoading(false);
+
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+
+        try {
+          if (currentSession?.user) {
+            await fetchProfile(currentSession.user.id);
+          } else {
+            setProfile(null);
+          }
+        } catch (err) {
+          console.error('Error in onAuthStateChange handler:', err);
+        } finally {
+          if (mounted) setLoading(false);
+        }
       }
     );
 
