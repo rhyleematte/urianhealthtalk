@@ -79,7 +79,13 @@ export default function ProfileScreen() {
         }
       }
     } catch (e: any) {
-      Alert.alert("Error", e.message || "Authentication failed.");
+      if (e.status === 429 || e.message?.toLowerCase().includes('too many requests')) {
+        Alert.alert("Too Many Requests", "You are being rate limited. Please wait a few minutes before trying again.");
+      } else if (e.message?.includes('already registered')) {
+        Alert.alert("Account Exists", "This email is already registered. Please try logging in instead.");
+      } else {
+        Alert.alert("Error", e.message || "Authentication failed.");
+      }
     } finally {
       setAuthLoading(false);
     }

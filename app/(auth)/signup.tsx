@@ -42,7 +42,13 @@ export default function SignupScreen() {
     });
 
     if (error) {
-      Alert.alert('Signup Failed', error.message);
+      if (error.status === 429 || error.message.toLowerCase().includes('too many requests')) {
+        Alert.alert('Too Many Requests', 'You are being rate limited. Please wait a few minutes before trying again.');
+      } else if (error.message.includes('already registered')) {
+        Alert.alert('Account Exists', 'This email is already registered. Please try logging in instead.');
+      } else {
+        Alert.alert('Signup Failed', error.message);
+      }
       setLoading(false);
     } else {
       setLoading(false);

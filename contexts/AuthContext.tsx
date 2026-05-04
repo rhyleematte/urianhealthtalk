@@ -76,7 +76,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         // 1. Get initial session
         const { data: { session: initialSession }, error } = await supabase.auth.getSession();
-        if (error) console.error('Get session error:', error.message);
+        
+        if (error) {
+          console.error('Get session error:', error.message);
+          // If the error is about invalid refresh token, we should clear it to prevent loops
+          if (error.message.toLowerCase().includes('refresh_token') || error.message.toLowerCase().includes('not found')) {
+            await supabase.auth.signOut();
+          }
+        }
         
         if (mounted) {
           setSession(initialSession);
