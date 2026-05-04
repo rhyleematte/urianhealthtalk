@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { Alert } from 'react-native';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../config/supabase';
 
@@ -13,6 +14,7 @@ export interface Profile {
   birthday?: string;
   gender?: string;
   plan_expires_at?: string;
+  avatar_url?: string;
 }
 
 type AuthContextType = {
@@ -105,6 +107,46 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     initializeAuth();
 
+    // Set up Realtime subscriptions for auto-refresh
+    const realtimeChannel = supabase.channel('mobile-realtime-channel')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'profiles' },
+        (payload) => {
+          if (mounted) {
+            refreshProfile().then(() => {
+              if (payload.old.plan_type !== payload.new.plan_type) {
+                const planName = payload.new.plan_type === 'premium' ? 'Premium' : 'Basic';
+                // Delay alert slightly to allow state to settle
+                setTimeout(() => {
+                  Alert.alert("Plan Updated", `Your account is now on the ${planName} plan!`);
+                }, 500);
+              }
+            });
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'subscription_requests' },
+        (payload) => {
+          if (mounted) {
+            refreshProfile().then(() => {
+              if (payload.new.status === 'approved') {
+                setTimeout(() => {
+                  Alert.alert("Request Approved", "Your subscription request was approved and your plan has been updated.");
+                }, 500);
+              } else if (payload.new.status === 'declined') {
+                setTimeout(() => {
+                  Alert.alert("Request Declined", "Your subscription request could not be processed.");
+                }, 500);
+              }
+            });
+          }
+        }
+      )
+      .subscribe();
+
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
         if (!mounted) return;
@@ -134,6 +176,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => {
       mounted = false;
       authListener.subscription.unsubscribe();
+      supabase.removeChannel(realtimeChannel);
     };
   }, []);
 

@@ -82,7 +82,8 @@ export default function PlansScreen() {
         'Request Sent',
         `A verification email has been sent to ${user.email}. Please click the "Confirm" button in your email to ${type === 'upgrade' ? 'activate Premium' : 'confirm cancellation'}.`
       );
-      fetchActiveRequest();
+      await fetchActiveRequest();
+      await refreshProfile();
     } catch (err: any) {
       Alert.alert('Error', err.message);
     } finally {

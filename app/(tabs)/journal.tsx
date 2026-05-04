@@ -134,18 +134,20 @@ export default function JournalScreen() {
       const weekEntries = entries.filter(e => (now - e.timestamp) < oneWeek);
       const monthEntries = entries.filter(e => (now - e.timestamp) < oneMonth);
 
-      const prompt = `Analyze these journal entries for a mental health app. 
+      const prompt = `You are an empathetic AI therapist analyzing a user's journal entries. 
+      Read the titles, descriptions (text), and moods of the following entries carefully to provide specific, personalized insights.
+
       TODAY'S ENTRIES: ${JSON.stringify(todayEntries.map(e => ({ title: e.title, text: e.text, mood: e.mood })))}
       WEEKLY ENTRIES: ${JSON.stringify(weekEntries.map(e => ({ title: e.title, text: e.text, mood: e.mood })))}
       MONTHLY ENTRIES: ${JSON.stringify(monthEntries.map(e => ({ title: e.title, text: e.text, mood: e.mood })))}
 
-      Provide a progress report with exactly 4 sections in plain text:
-      1. TODAY: A 2-sentence summary of today's state.
-      2. WEEKLY: A summary of the past week's emotional trend.
-      3. MONTHLY: Long-term patterns and progress noticed.
-      4. OVERALL MOOD: One word describing the current state.
+      Provide a progress report with exactly 4 sections in plain text. Do not use markdown bolding in the section titles.
+      1. TODAY: Analyze today's specific journal titles and descriptions. Give a 2-sentence empathetic summary of their thoughts and feelings today.
+      2. WEEKLY: Analyze the week's journal titles and descriptions. What is the emotional trend or recurring theme over the past 7 days?
+      3. MONTHLY: Analyze the month's journal titles and descriptions. What long-term patterns, triggers, or progress can you identify over the past 30 days?
+      4. OVERALL MOOD: One word describing their current state.
 
-      FORMAT: Keep it empathetic and professional. Use a supportive tone.`;
+      FORMAT: Keep it empathetic, highly personalized to their actual writing, and professional. Use a supportive tone.`;
 
       const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
         model: 'llama-3.3-70b-versatile',

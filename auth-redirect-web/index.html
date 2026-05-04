@@ -1,149 +1,279 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Verified - Serene</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap');
-
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Manrope', sans-serif;
-            background-color: #f8f9fa;
-            color: #2d3748;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-
-        .container {
-            background: white;
-            padding: 40px;
-            border-radius: 24px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-        }
-
-        .icon {
-            background-color: #e6fffa;
-            color: #319795;
-            width: 80px;
-            height: 80px;
-            border-radius: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 24px auto;
-        }
-
-        .icon svg {
-            width: 40px;
-            height: 40px;
-        }
-
-        h1 {
-            font-size: 24px;
-            font-weight: 800;
-            margin: 0 0 12px 0;
-            color: #2d3748;
-        }
-
-        p {
-            font-size: 16px;
-            color: #718096;
-            line-height: 1.5;
-            margin: 0 0 32px 0;
-        }
-
-        .btn {
-            display: inline-block;
-            background-color: #319795;
-            color: white;
-            text-decoration: none;
-            padding: 16px 32px;
-            border-radius: 12px;
-            font-weight: 600;
-            transition: opacity 0.2s;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        .btn:hover {
-            opacity: 0.9;
-        }
-
-        .loading {
-            display: none;
-        }
-        
-        #status-container.is-loading .success-content {
-            display: none;
-        }
-        
-        #status-container.is-loading .loading {
-            display: block;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Serene Web - Mental Health Companion</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
+  <!-- AUTH VIEW -->
+  <div id="auth-container" class="app-container" style="display: none; align-items: center; justify-content: center; min-height: 100vh;">
+    <div class="glass-card" style="max-width: 440px; width: 95%; padding: 48px; text-align: center;">
+      <div style="width: 80px; height: 80px; background: var(--secondary); border-radius: 40px; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px auto;">
+        <i data-lucide="leaf" style="width: 40px; height: 40px; color: white;"></i>
+      </div>
+      <h2 id="auth-title" style="font-size: 32px; font-weight: 800; margin-bottom: 8px;">Welcome Back</h2>
+      <p id="auth-subtitle" style="color: var(--text-light); margin-bottom: 32px;">Sign in to continue your journey</p>
+      
+      <div id="signup-fields" style="display: none; flex-direction: column; gap: 16px; margin-bottom: 16px;">
+        <input type="text" id="signup-name" placeholder="Full Name" style="background: white; border: 1px solid #e1e3e6; padding: 16px; border-radius: 16px;">
+        <input type="date" id="signup-birthday" style="color: var(--text-light); background: white; border: 1px solid #e1e3e6; padding: 16px; border-radius: 16px;">
+        <select id="signup-gender" style="color: var(--text-light); width: 100%; padding: 16px 20px; border-radius: 16px; border: 1px solid #e1e3e6; background: white; font-size: 16px;">
+          <option value="" disabled selected>Select Gender</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Non-binary">Non-binary</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
 
-    <div class="container" id="status-container">
-        
-        <div class="success-content" id="success-view" style="display: none;">
-            <div class="icon">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                </svg>
-            </div>
-            <h1 id="title">Verification Successful!</h1>
-            <p id="message">Your email has been successfully verified. You can now close this window and return to the app.</p>
-            <!-- In the future, you can put your custom app scheme here like serene:// -->
-            <a href="#" onclick="window.close()" class="btn">Close Window</a>
-        </div>
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <input type="email" id="login-email" placeholder="Email Address" style="background: white; border: 1px solid #e1e3e6; padding: 16px; border-radius: 16px;">
+        <input type="password" id="login-password" placeholder="Password" style="background: white; border: 1px solid #e1e3e6; padding: 16px; border-radius: 16px;">
+        <button id="btn-login" class="btn-icon" style="width: 100%; border-radius: 16px; font-weight: 700; height: 56px;">Sign In</button>
+      </div>
 
-        <div class="success-content" id="error-view" style="display: none;">
-            <div class="icon" style="background-color: #FFF5F5; color: #E53E3E;">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </div>
-            <h1>Something went wrong</h1>
-            <p>We couldn't verify your request. The link might be expired or invalid.</p>
-        </div>
-
+      <div style="margin-top: 24px;">
+        <a href="#" id="toggle-auth" style="color: var(--primary); font-weight: 700; text-decoration: none;">Don't have an account? Sign Up</a>
+      </div>
     </div>
+  </div>
 
-    <script>
-        // Check if there is a hash or query param from Supabase
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const queryParams = new URLSearchParams(window.location.search);
+  <!-- DASHBOARD VIEW -->
+  <div id="dashboard-container" class="app-container" style="display: none;">
+    <aside class="sidebar">
+      <div class="logo"><i data-lucide="leaf" style="color: var(--primary); margin-right: 8px;"></i> <span>Serene</span></div>
+      <nav class="nav-links">
+        <div class="nav-item active" data-tab="chat"><i data-lucide="message-circle"></i> <span>AI Chat</span></div>
+        <div class="nav-item" data-tab="journal"><i data-lucide="book"></i> <span>Journal</span></div>
+        <div class="nav-item" data-tab="plans"><i data-lucide="gem"></i> <span>Plans</span></div>
+        <div class="nav-item" data-tab="profile"><i data-lucide="user"></i> <span>Profile</span></div>
+      </nav>
+      <div class="nav-item" id="btn-logout" style="margin-top: auto; color: #ba1a1a; background: rgba(186, 26, 26, 0.05);"><i data-lucide="log-out"></i> <span>Sign Out</span></div>
+    </aside>
+
+    <main class="main-content">
+      <header class="header">
+        <div class="welcome">
+          <h1 id="tab-title">AI Companion</h1>
+          <p id="current-date"></p>
+        </div>
+        <div id="plan-badge" class="glass-card" style="padding: 10px 24px; border-radius: 40px; font-size: 14px; font-weight: 800; background: white; color: var(--primary);">BASIC</div>
+      </header>
+
+      <!-- CHAT TAB (Active by default) -->
+      <section id="tab-chat" class="tab-content">
+        <div class="glass-card chat-window">
+          <div class="messages" id="chat-messages">
+            <div class="message bot">Hello! I'm Urian. I'm here to listen and support you. How are you feeling today?</div>
+          </div>
+          <div class="chat-input-row">
+            <input type="text" id="chat-input" placeholder="Type your message here...">
+            <button id="btn-send-chat" class="btn-icon"><i data-lucide="send"></i></button>
+          </div>
+        </div>
+      </section>
+
+      <!-- JOURNAL TAB -->
+      <section id="tab-journal" class="tab-content" style="display: none;">
+        <div class="grid">
+          <div class="glass-card" style="flex: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+              <h2>New Entry</h2>
+              <button id="btn-analyze-web" style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px;"><i data-lucide="sparkles" style="width: 18px; height: 18px;"></i> Analyze My Progress</button>
+            </div>
+            <input type="text" id="journal-title-input" placeholder="Title of your thoughts" style="width: 100%; padding: 16px; border-radius: 12px; border: 1px solid #e1e3e6; margin-bottom: 16px; font-weight: 700;">
+            <textarea id="journal-text-input" style="width: 100%; height: 200px; padding: 20px; border-radius: 16px; border: 1px solid #e1e3e6; margin-bottom: 16px; font-family: inherit; font-size: 16px; outline: none;" placeholder="Start writing..."></textarea>
+            <div style="display: flex; gap: 12px; margin-bottom: 24px; overflow-x: auto; padding-bottom: 8px;">
+               <div class="mood-btn selected" data-mood="Okay">😐 Okay</div>
+               <div class="mood-btn" data-mood="Peaceful">🍃 Peaceful</div>
+               <div class="mood-btn" data-mood="Anxious">😰 Anxious</div>
+               <div class="mood-btn" data-mood="Happy">😊 Happy</div>
+               <div class="mood-btn" data-mood="Sad">😢 Sad</div>
+            </div>
+            <button id="btn-save-journal" class="btn-icon" style="width: 100%; font-weight: 700; border-radius: 16px; height: 56px;">Save Entry</button>
+          </div>
+          <div class="glass-card" style="max-height: 800px; overflow-y: auto;">
+            <h2>Recent Entries</h2>
+            <div id="full-journal-list" style="margin-top: 24px;"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PLANS TAB -->
+      <section id="tab-plans" class="tab-content" style="display: none;">
+        <div style="text-align: center; margin-bottom: 40px;">
+          <h2 style="font-size: 32px; font-weight: 800;">Choose Your Path</h2>
+          <p style="color: var(--text-light);">Select the plan that best fits your journey to peace.</p>
+        </div>
         
-        const accessToken = hashParams.get('access_token');
-        const error = hashParams.get('error') || queryParams.get('error');
+        <div id="pending-request-card" class="glass-card" style="display: none; max-width: 900px; margin: 0 auto 32px auto; background: #fffbeeb3; border-left: 4px solid #f59e0b; padding: 24px;">
+          <h3 id="pending-request-title" style="font-size: 18px; font-weight: 800; color: #b45309; margin-bottom: 8px;">Pending Request</h3>
+          <p style="color: #92400e;">Please verify this action via the email we sent you.</p>
+        </div>
 
-        if (accessToken || hashParams.get('type') === 'signup' || hashParams.get('type') === 'recovery') {
-            // Success!
-            document.getElementById('success-view').style.display = 'block';
-            
-            if (hashParams.get('type') === 'recovery') {
-                document.getElementById('title').innerText = "Password Reset";
-                document.getElementById('message').innerText = "You can now return to the app to reset your password.";
-            }
-            
-        } else if (error) {
-            // Error!
-            document.getElementById('error-view').style.display = 'block';
-        } else {
-            // Just a normal visit without tokens
-            document.getElementById('success-view').style.display = 'block';
-            document.getElementById('title').innerText = "Serene AI";
-            document.getElementById('message').innerText = "A supportive mental health companion.";
-        }
-    </script>
+        <div class="grid" style="max-width: 900px; margin: 0 auto; align-items: start;">
+          <!-- Basic Plan -->
+          <div class="glass-card" style="background: white;">
+            <h3 style="font-size: 22px; font-weight: 800; margin-bottom: 8px;">Free Plan</h3>
+            <div style="font-size: 36px; font-weight: 800; margin: 20px 0;">$0<span style="font-size: 16px; color: var(--text-light); font-weight: 400;">/forever</span></div>
+            <ul style="text-align: left; list-style: none; margin-bottom: 40px; padding: 0;">
+              <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; color: var(--text-light);"><i data-lucide="check-circle" style="width: 18px; height: 18px; color: var(--primary);"></i> Limited daily AI tokens</li>
+              <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; color: var(--text-light);"><i data-lucide="check-circle" style="width: 18px; height: 18px; color: var(--primary);"></i> Basic Journal access</li>
+              <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; color: var(--text-light);"><i data-lucide="check-circle" style="width: 18px; height: 18px; color: var(--primary);"></i> Daily Calm Tips</li>
+            </ul>
+            <button id="btn-basic-web" disabled style="width: 100%; height: 56px; border-radius: 16px; background: #f1f5f9; color: #94a3b8; border: none; font-weight: 700; cursor: default;">Current Plan</button>
+          </div>
+
+          <!-- Premium Plan -->
+          <div class="glass-card" style="border: 2px solid var(--primary); background: white; position: relative; transform: scale(1.05); z-index: 10;">
+            <div style="position: absolute; top: 12px; right: 12px; background: var(--primary); color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800;">RECOMMENDED</div>
+            <h3 style="font-size: 22px; font-weight: 800; margin-bottom: 8px; color: var(--primary);">Premium Plan</h3>
+            <div style="font-size: 36px; font-weight: 800; color: var(--primary); margin: 20px 0;">$12<span style="font-size: 16px; color: var(--text-light); font-weight: 400;">/month</span></div>
+            <ul style="text-align: left; list-style: none; margin-bottom: 40px; padding: 0;">
+              <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px;"><i data-lucide="check-circle" style="width: 18px; height: 18px; color: var(--primary);"></i> Unlimited AI tokens</li>
+              <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px;"><i data-lucide="check-circle" style="width: 18px; height: 18px; color: var(--primary);"></i> Advanced Emotional Analytics</li>
+              <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px;"><i data-lucide="check-circle" style="width: 18px; height: 18px; color: var(--primary);"></i> Personalized Therapy Plans</li>
+              <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px;"><i data-lucide="check-circle" style="width: 18px; height: 18px; color: var(--primary);"></i> Priority Specialist Access</li>
+            </ul>
+            <button id="btn-upgrade-web" class="btn-icon" style="width: 100%; height: 56px; border-radius: 16px; font-weight: 700;">Upgrade Now</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- PROFILE TAB -->
+      <section id="tab-profile" class="tab-content" style="display: none;">
+        <div class="glass-card" style="max-width: 600px; margin: 0 auto; padding: 40px;">
+          <div style="text-align: center; margin-bottom: 40px;">
+            <div id="profile-avatar-icon" style="width: 120px; height: 120px; background: var(--secondary); border-radius: 60px; display: flex; align-items: center; justify-content: center; font-size: 48px; margin: 0 auto 16px auto; overflow: hidden;">
+              <i data-lucide="user" style="width: 48px; height: 48px; color: white;"></i>
+            </div>
+            <h2 id="profile-name" style="font-size: 28px; font-weight: 800; margin-bottom: 8px;">John Doe</h2>
+            <p id="profile-plan-text" style="color: var(--primary); font-weight: 800; font-size: 16px;">Basic Member • email@example.com</p>
+          </div>
+
+          <div style="margin-bottom: 24px;">
+            <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 16px; color: var(--text);">Account Information</h3>
+            <div style="background: white; border-radius: 20px; padding: 8px 0; border: 1px solid #e1e3e6;">
+              <div style="display: flex; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid #f1f3f5;">
+                <span style="color: var(--text); font-weight: 600;">Email Address</span>
+                <span id="profile-email-row" style="color: var(--text-light);">email@example.com</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid #f1f3f5;">
+                <span style="color: var(--text); font-weight: 600;">Date of Birth</span>
+                <span id="profile-dob" style="color: var(--text-light);">Not set</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid #f1f3f5;">
+                <span style="color: var(--text); font-weight: 600;">Gender</span>
+                <span id="profile-gender" style="color: var(--text-light);">Not set</span>
+              </div>
+              <div id="premium-expiry-row" style="display: none; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid #f1f3f5;">
+                <span style="color: var(--text); font-weight: 600;">Premium Expires</span>
+                <span id="profile-expires" style="color: var(--text-light);">N/A</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 16px 24px;">
+                <span style="color: var(--text); font-weight: 600;">Member Since</span>
+                <span id="profile-date" style="color: var(--text-light);">May 2024</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 40px; text-align: center;">
+            <button onclick="document.getElementById('edit-profile-modal').style.display='flex'" style="background: var(--primary); color: white; border: none; padding: 16px 32px; border-radius: 16px; font-weight: 700; font-size: 16px; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 16px;">
+              <i data-lucide="edit-3"></i> Edit Profile
+            </button>
+            <button onclick="logout()" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); padding: 16px 32px; border-radius: 16px; font-weight: 700; font-size: 16px; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+              <i data-lucide="log-out"></i> Log Out
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Edit Profile Modal -->
+  <div id="edit-profile-modal" class="app-container" style="display: none; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto; padding: 20px;">
+    <div class="glass-card" style="background: white; padding: 32px; max-width: 500px; width: 100%; text-align: left; border-radius: 24px; max-height: 90vh; overflow-y: auto;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <h3 style="font-size: 24px; font-weight: 800; color: var(--text);">Edit Profile</h3>
+        <button onclick="document.getElementById('edit-profile-modal').style.display='none'" style="background: none; border: none; cursor: pointer;"><i data-lucide="x"></i></button>
+      </div>
+
+      <div style="text-align: center; margin-bottom: 24px; position: relative;">
+        <div id="edit-avatar-preview" style="width: 100px; height: 100px; background: var(--secondary); border-radius: 50px; display: flex; align-items: center; justify-content: center; margin: 0 auto; overflow: hidden; position: relative; cursor: pointer;" onclick="document.getElementById('avatar-upload').click()">
+          <i data-lucide="camera" style="color: white; z-index: 2;"></i>
+          <img id="avatar-img-preview" src="" style="display: none; width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">
+          <div style="position: absolute; width: 100%; height: 100%; background: rgba(0,0,0,0.3); top: 0; left: 0; z-index: 1;"></div>
+        </div>
+        <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
+        <p style="font-size: 12px; color: var(--text-light); margin-top: 8px;">Tap to change picture</p>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div>
+          <label style="font-weight: 700; font-size: 14px; color: var(--text); display: block; margin-bottom: 8px;">Full Name</label>
+          <input type="text" id="edit-name" style="width: 100%; background: white; border: 1px solid #e1e3e6; padding: 14px; border-radius: 12px; font-family: inherit;">
+        </div>
+        <div>
+          <label style="font-weight: 700; font-size: 14px; color: var(--text); display: block; margin-bottom: 8px;">Email Address</label>
+          <input type="email" id="edit-email" style="width: 100%; background: white; border: 1px solid #e1e3e6; padding: 14px; border-radius: 12px; font-family: inherit;">
+        </div>
+        <div>
+          <label style="font-weight: 700; font-size: 14px; color: var(--text); display: block; margin-bottom: 8px;">New Password (Optional)</label>
+          <input type="password" id="edit-password" placeholder="Leave blank to keep current" style="width: 100%; background: white; border: 1px solid #e1e3e6; padding: 14px; border-radius: 12px; font-family: inherit;">
+        </div>
+        <div>
+          <label style="font-weight: 700; font-size: 14px; color: var(--text); display: block; margin-bottom: 8px;">Birthday</label>
+          <input type="date" id="edit-birthday" style="width: 100%; background: white; border: 1px solid #e1e3e6; padding: 14px; border-radius: 12px; font-family: inherit; color: var(--text-light);">
+        </div>
+        <div>
+          <label style="font-weight: 700; font-size: 14px; color: var(--text); display: block; margin-bottom: 8px;">Gender</label>
+          <select id="edit-gender" style="width: 100%; background: white; border: 1px solid #e1e3e6; padding: 14px; border-radius: 12px; font-family: inherit; color: var(--text-light);">
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Non-binary">Non-binary</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+
+      <button id="btn-save-profile" style="background: var(--primary); color: white; border: none; padding: 16px; border-radius: 16px; font-weight: 700; font-size: 16px; cursor: pointer; width: 100%; margin-top: 24px;">Save Changes</button>
+    </div>
+  </div>
+    </main>
+  </div>
+
+  <!-- AI Analysis Modal -->
+  <div id="analysis-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px);">
+    <div class="glass-card" style="max-width: 600px; width: 90%; background: white;">
+      <h2 style="margin-bottom: 20px; display: flex; align-items: center; gap: 8px;"><i data-lucide="sparkles" style="color: var(--primary);"></i> AI Progress Report</h2>
+      <div id="analysis-content" style="max-height: 400px; overflow-y: auto; line-height: 1.6; color: #4a5568;">
+        Analyzing your journey...
+      </div>
+      <button onclick="document.getElementById('analysis-modal').style.display='none'" class="btn-icon" style="width: 100%; margin-top: 24px;">Close Report</button>
+    </div>
+  </div>
+
+  <!-- MESSAGE MODAL -->
+  <div id="message-modal" class="app-container" style="display: none; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+    <div class="glass-card" style="background: white; padding: 32px; max-width: 400px; width: 90%; text-align: center; border-radius: 24px;">
+      <div id="message-modal-icon" style="margin-bottom: 16px; display: flex; justify-content: center;">
+        <i data-lucide="info" style="width: 48px; height: 48px; color: var(--primary);"></i>
+      </div>
+      <h3 id="message-modal-title" style="font-size: 24px; font-weight: 800; margin-bottom: 12px; color: var(--text);">Update</h3>
+      <p id="message-modal-text" style="color: var(--text-light); margin-bottom: 24px; font-size: 16px;">Your plan has been updated.</p>
+      <button onclick="document.getElementById('message-modal').style.display='none'" class="btn-icon" style="width: 100%; border-radius: 16px; height: 56px; font-weight: 700;">Got it</button>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+  </script>
+  <script src="app.js"></script>
 </body>
 </html>

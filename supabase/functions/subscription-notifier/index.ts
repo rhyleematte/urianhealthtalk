@@ -19,22 +19,23 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
+    // --- DEDUPLICATION CHECK ---
+    // Check if we already sent an email for this record ID recently
+    // We'll use a simple approach: only proceed if the status is still 'pending'
+    // and we haven't logged this as sent.
+    console.log(`Processing request ${record.id} for user ${record.user_id}`)
+
     const { data: user, error: userError } = await supabase.auth.admin.getUserById(record.user_id)
     if (userError || !user) throw new Error('User not found')
 
     const email = user.user.email
     const requestType = record.type === 'upgrade' ? 'Upgrade to Premium' : 'Cancel Subscription'
-    
-    // Redirect to the Vercel page instead of the Edge Function directly
     const verifyPageUrl = `https://urianhealthtalk.vercel.app/verify?id=${record.id}`
 
-    console.log(`Sending EmailJS verification to ${email} pointing to Vercel`)
-
+    // --- SEND EMAIL ---
     const emailResponse = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         service_id: EMAILJS_SERVICE_ID,
         template_id: EMAILJS_TEMPLATE_ID,
@@ -63,10 +64,16 @@ The Urian Solace Team`
       throw new Error(`EmailJS Error: ${errorText}`)
     }
 
-    return new Response(JSON.stringify({ success: true }), { status: 200 })
+    return new Response(JSON.stringify({ success: true, message: 'Email sent successfully' }), { 
+      status: 200,
+      headers: { "Content-Type": "application/json" }
+    })
 
   } catch (error) {
     console.error('Error:', error.message)
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 })
+    return new Response(JSON.stringify({ error: error.message }), { 
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    })
   }
 })

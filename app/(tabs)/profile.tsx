@@ -36,6 +36,9 @@ export default function ProfileScreen() {
   const [editBirthday, setEditBirthday] = useState(new Date());
   const [showEditDatePicker, setShowEditDatePicker] = useState(false);
   const [editGender, setEditGender] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editPassword, setEditPassword] = useState('');
+  const [editAvatar, setEditAvatar] = useState<{uri: string, base64?: string | null} | null>(null);
   const [showEditGenderModal, setShowEditGenderModal] = useState(false);
   const [updating, setUpdating] = useState(false);
 
@@ -92,31 +95,65 @@ export default function ProfileScreen() {
   };
 
   const handleUpdateProfile = async () => {
-    if (!editName || !editBirthday || !editGender) {
-      Alert.alert("Error", "All fields are required.");
-      return;
-    }
-
+    if (!user) return;
     setUpdating(true);
     try {
+      let avatar_url = profile?.avatar_url;
+
+      if (editAvatar?.base64) {
+        const fileExt = editAvatar.uri.split('.').pop() || 'jpeg';
+        const fileName = `${user.id}-${Math.random()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('avatars')
+          .upload(fileName, decode(editAvatar.base64), { contentType: 'image/' + fileExt, upsert: true });
+
+        if (uploadError) throw uploadError;
+        avatar_url = fileName;
+      }
+
       const { error } = await supabase
         .from('profiles')
         .update({
           full_name: editName,
           birthday: editBirthday.toLocaleDateString(),
           gender: editGender,
+          avatar_url: avatar_url
         })
-        .eq('id', user?.id);
+        .eq('id', user.id);
 
       if (error) throw error;
+
+      let authUpdates: any = {};
+      if (editEmail && editEmail !== user.email) authUpdates.email = editEmail;
+      if (editPassword) authUpdates.password = editPassword;
+
+      if (Object.keys(authUpdates).length > 0) {
+        const { error: authError } = await supabase.auth.updateUser(authUpdates);
+        if (authError) throw authError;
+      }
       
       await refreshProfile();
       setEditModalVisible(false);
-      Alert.alert("Success", "Profile updated successfully!");
-    } catch (e: any) {
-      Alert.alert("Error", e.message || "Failed to update profile.");
+      Alert.alert('Success', 'Profile updated successfully');
+    } catch (err: any) {
+      Alert.alert('Error', err.message);
     } finally {
       setUpdating(false);
+    }
+  };
+
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.5,
+      base64: true,
+    });
+
+    if (!result.canceled) {
+      setEditAvatar({ uri: result.assets[0].uri, base64: result.assets[0].base64 });
     }
   };
 
@@ -126,6 +163,9 @@ export default function ProfileScreen() {
     const birthDate = profile?.birthday ? new Date(profile.birthday) : new Date();
     setEditBirthday(isNaN(birthDate.getTime()) ? new Date() : birthDate);
     setEditGender(profile?.gender || '');
+    setEditEmail(user?.email || '');
+    setEditPassword('');
+    setEditAvatar(null);
     setEditModalVisible(true);
   };
 
@@ -420,16 +460,25 @@ export default function ProfileScreen() {
         {/* User Profile Info */}
         <View style={styles.profileHeader}>
           <View style={styles.avatarWrapper}>
-            <Image 
-              source={require('@/assets/images/user_avatar.png')} 
-              style={styles.avatarLarge} 
-            />
+            {profile?.avatar_url ? (
+              <Image 
+                source={{ uri: supabase.storage.from('avatars').getPublicUrl(profile.avatar_url).data.publicUrl }} 
+                style={styles.avatarLarge} 
+              />
+            ) : (
+              <Image 
+                source={require('@/assets/images/user_avatar.png')} 
+                style={styles.avatarLarge} 
+              />
+            )}
             <TouchableOpacity style={styles.editButton} onPress={openEditModal}>
               <Edit3 size={16} color="#ffffff" />
             </TouchableOpacity>
           </View>
           <Text style={styles.userName}>{profile?.full_name || user?.email}</Text>
-          <Text style={styles.userStatus}>{profile?.plan_type === 'premium' ? 'Premium' : 'Basic'} Member • {user?.email}</Text>
+          <Text style={styles.userStatus}>
+            {profile?.plan_type === 'premium' ? `Premium Member • ${user?.email}` : user?.email}
+          </Text>
         </View>
 
         {/* Account Section */}
@@ -532,6 +581,21 @@ export default function ProfileScreen() {
           >
             <ScrollView contentContainerStyle={styles.modalContent}>
               <View style={styles.form}>
+                <View style={{ alignItems: 'center', marginBottom: 20 }}>
+                  <TouchableOpacity onPress={pickImage} style={{ position: 'relative' }}>
+                    {editAvatar?.uri ? (
+                      <Image source={{ uri: editAvatar.uri }} style={[styles.avatarLarge, { opacity: 0.8 }]} />
+                    ) : profile?.avatar_url ? (
+                      <Image source={{ uri: supabase.storage.from('avatars').getPublicUrl(profile.avatar_url).data.publicUrl }} style={[styles.avatarLarge, { opacity: 0.8 }]} />
+                    ) : (
+                      <Image source={require('@/assets/images/user_avatar.png')} style={[styles.avatarLarge, { opacity: 0.8 }]} />
+                    )}
+                    <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 50 }}>
+                      <Text style={{ color: 'white', fontWeight: 'bold' }}>Edit</Text>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+
                 <View style={styles.inputWrapper}>
                   <Text style={styles.inputLabel}>Full Name</Text>
                   <TextInput 
@@ -539,6 +603,27 @@ export default function ProfileScreen() {
                     value={editName}
                     onChangeText={setEditName}
                     placeholder="Full Name"
+                  />
+                </View>
+                <View style={styles.inputWrapper}>
+                  <Text style={styles.inputLabel}>Email Address</Text>
+                  <TextInput 
+                    style={styles.input} 
+                    placeholder="name@example.com"
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                    value={editEmail}
+                    onChangeText={setEditEmail}
+                  />
+                </View>
+                <View style={styles.inputWrapper}>
+                  <Text style={styles.inputLabel}>New Password (Optional)</Text>
+                  <TextInput 
+                    style={styles.input} 
+                    placeholder="Leave blank to keep current"
+                    secureTextEntry
+                    value={editPassword}
+                    onChangeText={setEditPassword}
                   />
                 </View>
                 <View style={styles.inputWrapper}>
