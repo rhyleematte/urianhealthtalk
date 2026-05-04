@@ -34,6 +34,14 @@ document.getElementById('toggle-auth').addEventListener('click', (e) => {
 
 async function checkAuth() {
   const { data: { session } } = await supabaseClient.auth.getSession();
+  
+  // Handle Recovery (Password Reset)
+  const hash = window.location.hash;
+  if (hash && (hash.includes('type=recovery') || hash.includes('type=invite'))) {
+    showResetPassword();
+    return;
+  }
+
   if (session) {
     currentUser = session.user;
     showDashboard();
@@ -41,6 +49,27 @@ async function checkAuth() {
     showAuth();
   }
 }
+
+function showResetPassword() {
+  document.getElementById('auth-container').style.display = 'none';
+  document.getElementById('dashboard-container').style.display = 'none';
+  document.getElementById('reset-password-container').style.display = 'flex';
+  lucide.createIcons();
+}
+
+document.getElementById('btn-reset-password').addEventListener('click', async () => {
+  const newPassword = document.getElementById('new-password').value;
+  if (!newPassword) return alert('Please enter a new password');
+
+  const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
+  if (error) {
+    alert(error.message);
+  } else {
+    alert('Password updated successfully! You can now log in.');
+    window.location.hash = ''; // Clear hash
+    showAuth();
+  }
+});
 
 document.getElementById('btn-login').addEventListener('click', async () => {
   const email = document.getElementById('login-email').value;

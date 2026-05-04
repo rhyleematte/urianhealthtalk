@@ -44,6 +44,22 @@
     </div>
   </div>
 
+  <!-- RESET PASSWORD VIEW -->
+  <div id="reset-password-container" class="app-container" style="display: none; align-items: center; justify-content: center; min-height: 100vh;">
+    <div class="glass-card" style="max-width: 440px; width: 95%; padding: 48px; text-align: center;">
+      <div style="width: 80px; height: 80px; background: var(--secondary); border-radius: 40px; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px auto;">
+        <i data-lucide="lock" style="width: 40px; height: 40px; color: white;"></i>
+      </div>
+      <h2 style="font-size: 32px; font-weight: 800; margin-bottom: 8px;">Reset Password</h2>
+      <p style="color: var(--text-light); margin-bottom: 32px;">Please enter your new password below</p>
+      
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <input type="password" id="new-password" placeholder="New Password" style="background: white; border: 1px solid #e1e3e6; padding: 16px; border-radius: 16px;">
+        <button id="btn-reset-password" class="btn-icon" style="width: 100%; border-radius: 16px; font-weight: 700; height: 56px;">Update Password</button>
+      </div>
+    </div>
+  </div>
+
   <!-- DASHBOARD VIEW -->
   <div id="dashboard-container" class="app-container" style="display: none;">
     <aside class="sidebar">

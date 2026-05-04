@@ -108,6 +108,26 @@ export default function LoginScreen() {
             </TouchableOpacity>
           </Link>
         </View>
+
+        <TouchableOpacity 
+          style={styles.forgotPasswordBtn}
+          onPress={async () => {
+            if (!email) {
+              Alert.alert('Reset Password', 'Please enter your email address first.');
+              return;
+            }
+            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+              redirectTo: 'https://urianhealthtalk.vercel.app',
+            });
+            if (error) {
+              Alert.alert('Error', error.message);
+            } else {
+              Alert.alert('Reset Email Sent', 'Check your email for the password reset link.');
+            }
+          }}
+        >
+          <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -196,5 +216,14 @@ const styles = StyleSheet.create({
     ...Typography.body,
     color: Colors.primary,
     fontWeight: '700',
+  },
+  forgotPasswordBtn: {
+    marginTop: 16,
+    alignItems: 'center',
+  },
+  forgotPasswordText: {
+    ...Typography.body,
+    fontSize: 14,
+    color: Colors.textMuted,
   },
 });
