@@ -8,7 +8,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "build": "npx expo export --platform web && rm -rf public && mv dist public",
+    "build": "rm -rf public && mkdir -p public && cp -rv auth-redirect-web/* public/",
     "lint": "expo lint"
   },
   "dependencies": {
