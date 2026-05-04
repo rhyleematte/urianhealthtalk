@@ -4,7 +4,7 @@ import {
   Modal, TextInput, Alert, ActivityIndicator 
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors, Typography } from '../../constants/Theme';
+import { Colors, Typography, Shadows } from '../../constants/Theme';
 import { 
   BookOpen, Leaf, Plus, Calendar, ChevronRight, 
   TrendingUp, Smile, Meh, Frown, Heart, X, Save, Sparkles, RefreshCw, FileText
@@ -532,11 +532,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     padding: 20,
     borderRadius: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 3,
+    ...Shadows.small,
   },
   cardTitle: {
     ...Typography.subtitle,
@@ -656,11 +652,9 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     gap: 16,
     marginBottom: 24,
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
     shadowRadius: 8,
-    elevation: 4,
+    ...Shadows.medium,
+    shadowColor: Colors.primary, // Keep the custom color
   },
   newEntryIcon: {
     width: 48,
@@ -706,11 +700,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 20,
     marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 5,
-    elevation: 1,
+    ...Shadows.small,
   },
   entryLeft: {
     gap: 6,
@@ -752,11 +742,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
+    ...Shadows.medium,
+    shadowColor: Colors.primary, // Keep the custom color
   },
   modalContainer: {
     flex: 1,

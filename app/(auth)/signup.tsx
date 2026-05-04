@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ActivityInd
 import { X } from 'lucide-react-native';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors, Typography } from '../../constants/Theme';
+import { Colors, Typography, Shadows } from '../../constants/Theme';
 import { Leaf, Mail, Lock, User, Calendar, Users, ChevronRight, Eye, EyeOff } from 'lucide-react-native';
 import { supabase } from '../../config/supabase';
 import { useRouter, Link } from 'expo-router';
@@ -385,11 +385,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 400,
     padding: 24,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-    elevation: 5,
+    ...Shadows.large,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -463,11 +459,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
     shadowRadius: 15,
-    elevation: 8,
+    ...Shadows.medium,
+    shadowColor: Colors.primary,
   },
   successTitle: {
     ...Typography.h2,

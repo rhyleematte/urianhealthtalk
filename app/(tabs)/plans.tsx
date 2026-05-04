@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Modal, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors, Typography } from '../../constants/Theme';
+import { Colors, Typography, Shadows } from '../../constants/Theme';
 import { CheckCircle, Leaf, Shield, XCircle, Heart, Clock, AlertCircle, Check, X } from 'lucide-react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../config/supabase';
@@ -310,13 +310,9 @@ const styles = StyleSheet.create({
   },
   planCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 30,
+    borderRadius: 24,
     padding: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 3,
+    ...Shadows.medium,
   },
   premiumCard: {
     backgroundColor: Colors.primary,

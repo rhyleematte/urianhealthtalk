@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, useRouter } from 'expo-router';
-import { Colors, Typography } from '../constants/Theme';
+import { Colors, Typography, Shadows } from '../constants/Theme';
 import { Lightbulb, Lock, Leaf } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -118,11 +118,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 20,
     position: 'absolute',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
+    ...Shadows.medium,
   },
   topPill: {
     top: 20,

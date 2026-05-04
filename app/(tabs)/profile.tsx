@@ -4,7 +4,7 @@ import {
 } from 'react-native';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors, Typography } from '../../constants/Theme';
+import { Colors, Typography, Shadows } from '../../constants/Theme';
 import { 
   User, Mail, Calendar, Languages, 
   Lock, Fingerprint, 
@@ -848,12 +848,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: '#ffffff',
     borderRadius: 24,
-    paddingVertical: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    ...Shadows.small,
   },
   settingRow: {
     flexDirection: 'row',
@@ -951,11 +946,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 400,
     padding: 24,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-    elevation: 5,
+    ...Shadows.large,
   },
   pickerWrapper: {
     paddingVertical: 20,
