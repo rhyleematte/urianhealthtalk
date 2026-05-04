@@ -45,8 +45,9 @@ export const Typography = {
     lineHeight: 20,
   },
   caption: {
-    ...Typography.body,
     fontSize: 12,
+    fontFamily: 'PublicSans-Regular',
+    lineHeight: 16,
   },
 };
 
