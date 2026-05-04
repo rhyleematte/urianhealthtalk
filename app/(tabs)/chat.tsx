@@ -157,10 +157,6 @@ GUIDELINES FOR INTERACTION:
             <TouchableOpacity onPress={handleClearChat} style={styles.headerIcon}>
               <Trash2 size={20} color={Colors.textMuted} />
             </TouchableOpacity>
-            <Image 
-              source={require('@/assets/images/user_avatar.png')} 
-              style={styles.avatar} 
-            />
           </View>
         </View>
 

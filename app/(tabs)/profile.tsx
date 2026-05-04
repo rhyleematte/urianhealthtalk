@@ -448,11 +448,7 @@ export default function ProfileScreen() {
           <Text style={styles.headerTitle}>Serene Dialogue</Text>
         </View>
         <View style={styles.headerRight}>
-          <Bell size={24} color={Colors.primary} style={{ marginRight: 16 }} />
-          <Image 
-            source={require('@/assets/images/user_avatar.png')} 
-            style={styles.avatarSmall} 
-          />
+          <Bell size={24} color={Colors.primary} />
         </View>
       </View>
 

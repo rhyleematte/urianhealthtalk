@@ -297,10 +297,7 @@ export default function JournalScreen() {
           <Leaf size={24} color={Colors.primary} />
           <Text style={styles.headerTitle}>Serene Journal</Text>
         </View>
-        <Image 
-          source={require('@/assets/images/user_avatar.png')} 
-          style={styles.avatar} 
-        />
+        <View style={styles.headerRight} />
       </View>
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
