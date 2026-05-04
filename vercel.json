@@ -1,6 +1,6 @@
 {
   "cleanUrls": true,
-  "outputDirectory": "dist",
+  "outputDirectory": "public",
   "rewrites": [
     {
       "source": "/verify",
